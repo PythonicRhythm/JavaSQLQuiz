@@ -17,7 +17,7 @@ import java.util.logging.Logger;
 public final class Quiz {
 
     private final String DB_URL = "jdbc:mysql://localhost:3306/quiz";       // The URL of the database the Quiz is working from.s
-    private final String Username = "root";                                 // Username 
+    private final String Username = "root";                                 // Username
     private final String Password = "root";                                 // Password
     private Statement sqlSt;                                                // Statement used to execute sql commands using the database.
     private Connection dbConnect;                                           // The bridge between the database and this java file.
@@ -49,7 +49,7 @@ public final class Quiz {
             while(allBoardEntries.next()) {
                 String name = allBoardEntries.getString("Name");
                 int score = allBoardEntries.getInt("Score");
-                System.out.format("%35s%10d", name, score);
+                System.out.printf("%-15s%-5d\n", name, score);
             }
 
         }
@@ -120,9 +120,9 @@ public final class Quiz {
         }
     }
 
-    // initializeDifficulty() will gather the difficulty setting of 
+    // initializeDifficulty() will gather the difficulty setting of
     // the quiz from the user via terminal. This setting will determine
-    // the questions the user will receive and the score they will 
+    // the questions the user will receive and the score they will
     // receive from each correct question.
     private void initializeDifficulty() {
         Scanner consoleReader = new Scanner(System.in);
@@ -167,10 +167,10 @@ public final class Quiz {
         String SQL = "select * from questions\nwhere Difficulty = "+difficulty+";";
         ResultSet result;   // Holds output from SQL
         try {
-  
+
             result = sqlSt.executeQuery(SQL);
             // Result holds the output from the SQL
-            
+
             int questionCounter = 1;
             while(result.next() != false) {
                 output = result.getString("Question");
@@ -197,6 +197,7 @@ public final class Quiz {
         }
     }
 
+    // Simple launcher
     public static void main(String[] args) {
         Quiz firstQuiz = new Quiz();
     }
