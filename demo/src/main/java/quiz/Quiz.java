@@ -30,17 +30,17 @@ public final class Quiz {
 
     private void displayLeaderboard() {
         String insertNewScore = "insert into leaderboard (Name, Score) values ('"+playerName+"', "+totalScore+");";
-        String gatherEntries = "Select * from leaderboard;";
+        String gatherEntries = "Select * from leaderboard order by Score desc;";
         String output;
         ResultSet allBoardEntries;
         try {
             sqlSt.executeUpdate(insertNewScore);
             allBoardEntries = sqlSt.executeQuery(gatherEntries);
 
-            System.out.println("\nLeaderboard:");
+            System.out.println("\nLEADERBOARD:");
             while(allBoardEntries.next()) {
                 output = allBoardEntries.getString("Name") + ": " + allBoardEntries.getInt("Score");
-                System.out.println(output);
+                System.out.print(output);
             }
 
         }
