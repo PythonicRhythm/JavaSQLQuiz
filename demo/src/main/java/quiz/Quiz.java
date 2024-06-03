@@ -6,20 +6,27 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Hello world!
+ * The Quiz class represents a mySQL quiz game that I created. The class reads
+ * questions from a local database and prompts the user with these questions
+ * looking for the correct answer. If the user types the correct answer, their score
+ * raises and if they didnt, they get shown the correct answer. There are difficulty
+ * settings for harder questions with better score boosts. Finally, a leaderboard
+ * is shown that is retrieved from the SQL database and the user's score is
+ * sent into the database.
  */
 public final class Quiz {
 
-    private final String DB_URL = "jdbc:mysql://localhost:3306/quiz";
-    private final String Username = "root";
-    private final String Password = "root";
-    private Statement sqlSt;
-    private Connection dbConnect;
-    private int difficulty;
-    private String playerName;
-    private int totalScore;
+    private final String DB_URL = "jdbc:mysql://localhost:3306/quiz";       // The URL of the database the Quiz is working from.s
+    private final String Username = "root";                                 // Username 
+    private final String Password = "root";                                 // Password
+    private Statement sqlSt;                                                // Statement used to execute sql commands using the database.
+    private Connection dbConnect;                                           // The bridge between the database and this java file.
+    private int difficulty;                                                 // Difficulty setting set by player.
+    private String playerName;                                              // Player's name used to insert them into the leaderboard.
+    private int totalScore;                                                 // Total score the player accrued, sent into the leaderboard.
 
 
+    // Constructor loop.
     public Quiz() {
         attemptConnection();
         initializeDifficulty();
@@ -28,10 +35,11 @@ public final class Quiz {
         displayLeaderboard();
     }
 
+    // displayLeaderboard() will insert the player's score into the db
+    // and show the current leaderboard's player and scores via the terminal.
     private void displayLeaderboard() {
         String insertNewScore = "insert into leaderboard (Name, Score) values ('"+playerName+"', "+totalScore+");";
         String gatherEntries = "Select * from leaderboard order by Score desc;";
-        String output;
         ResultSet allBoardEntries;
         try {
             sqlSt.executeUpdate(insertNewScore);
@@ -39,8 +47,9 @@ public final class Quiz {
 
             System.out.println("\nLEADERBOARD:");
             while(allBoardEntries.next()) {
-                output = allBoardEntries.getString("Name") + ": " + allBoardEntries.getInt("Score");
-                System.out.print(output);
+                String name = allBoardEntries.getString("Name");
+                int score = allBoardEntries.getInt("Score");
+                System.out.format("%35s%10d", name, score);
             }
 
         }
@@ -49,6 +58,8 @@ public final class Quiz {
         }
     }
 
+    // initializeLeaderboard() will create the leaderboard table in the db
+    // if not previously created.
     private void initializeLeaderboard() {
         String createTableSQL = "Create table if not exists leaderboard (" +
                                     "   QuestionID int PRIMARY KEY AUTO_INCREMENT," +
@@ -63,6 +74,8 @@ public final class Quiz {
         }
     }
 
+    // gatherPlayerName() will gather the player's name via terminal
+    // for later use in saving their score in the db leaderboard table.
     private void gatherPlayerName() {
         Scanner consoleReader = new Scanner(System.in);
         System.out.println("\nWhat is your name?");
@@ -70,8 +83,8 @@ public final class Quiz {
             System.out.print("> ");
 
             String response = consoleReader.nextLine().strip();
-            if(response.length() > 50) {
-                System.out.println("Name is too long, has to be less than 50 characters.");
+            if(response.length() > 30) {
+                System.out.println("Name is too long, can't be greater than 30 characters.");
             }
             else {
                 playerName = response;
@@ -80,6 +93,10 @@ public final class Quiz {
         }
     }
 
+    // attemptConnection() will attempt to connect to the db given
+    // the DB_URL, Username, and Password set in the member variables.
+    // If class not found, the user will know. If there is an error
+    // with the sql code the user will know.
     private void attemptConnection() {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
@@ -94,13 +111,19 @@ public final class Quiz {
         catch(ClassNotFoundException ex) {
             Logger.getLogger(Quiz.class.getName()).log(Level.SEVERE, null, ex);
             System.out.println("Class not found, check the JAR");
+            System.exit(0);
         }
         catch(SQLException ex) {
             Logger.getLogger(Quiz.class.getName()).log(Level.SEVERE, null, ex);
             System.out.println("SQL is bad! " + ex.getMessage());
+            System.exit(0);
         }
     }
 
+    // initializeDifficulty() will gather the difficulty setting of 
+    // the quiz from the user via terminal. This setting will determine
+    // the questions the user will receive and the score they will 
+    // receive from each correct question.
     private void initializeDifficulty() {
         Scanner consoleReader = new Scanner(System.in);
         System.out.println("What difficulty do you choose?\n1 - Easy\n2 - Medium\n3 - Hard");
@@ -133,6 +156,11 @@ public final class Quiz {
         }
     }
 
+
+    // promptQuestions() will display every single question from the user
+    // provided difficulty setting and ask the user for the correct answer.
+    // If the user provides the correct answer, they will receive a score
+    // boost. If not, the correct answer will be displayed to the user.
     private void promptQuestions() {
         Scanner consoleReader = new Scanner(System.in);
         String output;
@@ -142,6 +170,7 @@ public final class Quiz {
   
             result = sqlSt.executeQuery(SQL);
             // Result holds the output from the SQL
+            
             int questionCounter = 1;
             while(result.next() != false) {
                 output = result.getString("Question");
